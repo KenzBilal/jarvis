@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling==1.33.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "jarvis-backend"
+version = "0.1.0"
+description = "JARVIS - AI crypto research & trading platform (Phase 0 foundation)"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "fastapi==0.163.1",
+    "uvicorn[standard]==0.54.0",
+    "pydantic==2.14.3",
+    "pydantic-settings==2.16.3",
+    "sqlalchemy[asyncio]==2.0.57",
+    "asyncpg==0.32.0",
+    "alembic==1.20.1",
+    "arq==0.28.0",
+    "redis==5.3.1",
+    "httpx==0.28.1",
+    "structlog==26.1.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest==9.2.0",
+    "pytest-asyncio==1.5.0",
+    "pytest-env==1.8.5",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jarvis"]
+
+[tool.alembic]
+script_location = "%(here)s/alembic"
+prepend_sys_path = ["%(here)s/src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config"
+# Forced (no "D:" prefix) so tests can never pick up real credentials from a developer's .env.
+env = [
+    "SUPABASE_DB_URL=postgresql://test_user:test_password@localhost:5432/jarvis_test",
+    "REDIS_URL=redis://localhost:6379/15",
+    "JARVIS_ENV=test",
+    "TRADING_MODE=paper",
+    "LOG_LEVEL=WARNING",
+]

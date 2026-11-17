@@ -1,0 +1,26 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+.next/
+out/
+
+# Logs & local data
+*.log
+logs/
+.tmp/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/

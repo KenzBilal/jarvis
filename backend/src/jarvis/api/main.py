@@ -12,6 +12,7 @@ from jarvis.config.settings import Settings, get_settings
 from jarvis.core.errors import register_exception_handlers
 from jarvis.core.logging import CorrelationIdMiddleware, configure_logging
 from jarvis.db.base import close_redis, dispose_engine
+from fastapi.middleware.cors import CORSMiddleware
 
 
 @asynccontextmanager
@@ -43,6 +44,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         docs_url=None if settings.is_production else "/docs",
         redoc_url=None,
         openapi_url=None if settings.is_production else "/openapi.json",
+    )
+    # The Next.js browser client polls /health directly (TopBar status light);
+    # everything else is fetched server-side. Explicit allow-list from settings —
+    # never a wildcard. Added first so CorrelationIdMiddleware stays outermost
+    # and even preflight responses carry a correlation id.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origin_list,
+        allow_methods=["GET"],
+        allow_headers=["*"],
+        allow_credentials=False,
     )
     app.add_middleware(CorrelationIdMiddleware)
     register_exception_handlers(app)

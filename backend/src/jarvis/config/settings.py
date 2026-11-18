@@ -47,6 +47,13 @@ class Settings(BaseSettings):
     jarvis_env: Environment = "development"
     trading_mode: TradingMode = "paper"
     log_level: LogLevel = "INFO"
+    cors_origins: str = Field(
+        default="http://localhost:3000,http://127.0.0.1:3000",
+        description=(
+            "Comma-separated browser origins allowed to call the API directly. "
+            "Covers the Next.js dev server; add the Vercel URL for production."
+        ),
+    )
 
     # -- validators ---------------------------------------------------------- #
     @field_validator("trading_mode", mode="before")
@@ -88,6 +95,19 @@ class Settings(BaseSettings):
             raise ValueError("REDIS_URL must start with redis:// or rediss://")
         return SecretStr(raw)
 
+    @field_validator("cors_origins", mode="after")
+    @classmethod
+    def _validate_cors_origins(cls, value: str) -> str:
+        for origin in (part.strip() for part in value.split(",")):
+            if not origin:
+                continue
+            if origin == "*" or not origin.startswith(("http://", "https://")):
+                # Never a wildcard: browser access is granted per explicit origin.
+                raise ValueError(
+                    "CORS_ORIGINS must be a comma-separated list of http(s):// origins (no wildcard)"
+                )
+        return value
+
     @model_validator(mode="after")
     def _production_requires_remote_database(self) -> Self:
         if self.jarvis_env == "production" and self._parsed_db_url().host in _LOCAL_HOSTS:
@@ -122,6 +142,11 @@ class Settings(BaseSettings):
     def live_trading_enabled(self) -> bool:
         """Always ``False`` in Phase 0. Exists so future code has one gate to check."""
         return False
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        """Allowed browser origins, split from the comma-separated setting."""
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
 
 @lru_cache(maxsize=1)

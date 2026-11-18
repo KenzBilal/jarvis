@@ -78,7 +78,17 @@ export async function fetchHealth(): Promise<Health> {
 }
 
 export async function fetchReady(): Promise<Ready> {
-  return (await safeFetch<Ready>(`${API}/ready`)) ?? { status: "unknown", checks: {} };
+  // /ready answers 503 with a JSON body when degraded — that body is data, not an error.
+  try {
+    const r = await fetch(`${API}/ready`, { cache: "no-store" });
+    if (r.ok || r.status === 503) {
+      const body = (await r.json()) as Ready;
+      if (body && typeof body.status === "string") return body;
+    }
+  } catch {
+    /* unreachable — fall through to the "unknown" fallback below */
+  }
+  return { status: "unknown", checks: {} };
 }
 
 export async function fetchSymbols(market?: string): Promise<SymbolRow[]> {

@@ -12,7 +12,14 @@ DB_URL = "postgresql://user:s3cr3t-pw@aws-0-eu.pooler.supabase.com:5432/postgres
 
 @pytest.fixture(autouse=True)
 def _clean_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    for name in ("SUPABASE_DB_URL", "REDIS_URL", "JARVIS_ENV", "TRADING_MODE", "LOG_LEVEL"):
+    for name in (
+        "SUPABASE_DB_URL",
+        "REDIS_URL",
+        "JARVIS_ENV",
+        "TRADING_MODE",
+        "LOG_LEVEL",
+        "CORS_ORIGINS",
+    ):
         monkeypatch.delenv(name, raising=False)
 
 
@@ -36,6 +43,16 @@ def test_loads_from_environment(monkeypatch: pytest.MonkeyPatch) -> None:
     s = Settings(_env_file=None)  # type: ignore[call-arg]
     assert s.jarvis_env == "test"
     assert s.redis_url.get_secret_value() == "redis://example:6380/2"
+
+
+def test_cors_origins_split_and_strip() -> None:
+    s = make(cors_origins=" http://localhost:3000 , http://127.0.0.1:3000 ")
+    assert s.cors_origin_list == ["http://localhost:3000", "http://127.0.0.1:3000"]
+
+
+def test_cors_origins_reject_wildcard() -> None:
+    with pytest.raises(ValidationError):
+        make(cors_origins="*")
 
 
 def test_loads_from_env_file(tmp_path: Path) -> None:

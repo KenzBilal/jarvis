@@ -142,7 +142,8 @@ Intentionally not implemented. Requires Phase 8 validation + explicit unlock dec
 | 0 — Foundation | 49 | ✅ All pass |
 | 1 — Market Scanner | 19 | ✅ All pass |
 | 2–7 — Agents + Risk | 34 | ✅ All pass |
-| **Total** | **102** | ✅ **102/102** |
+| CORS + settings (2026-11-18) | 6 | ✅ All pass |
+| **Total** | **108** | ✅ **108/108** |
 
 ---
 
@@ -179,3 +180,51 @@ Owner supplied 3 redesigned frontend files (`globals.css`, `layout.tsx`, overvie
 clean · all 6 routes return **200** via `next start` with no error markers ·
 13 self-hosted woff2 font files emitted · backend `pytest` **102/102** ·
 pushed `cd0c2f9..e722f8c`, `main` == `origin/main`, working tree clean.
+
+---
+
+## Strict Monochrome Theme + Status Honesty — 2026-11-18 (commits `c524a6b`, `796e603`)
+
+Owner request: "make it fully dark theme b/w". Delivered as **zero hues
+anywhere**, with semantics carried by contrast instead of color.
+
+**Theme (`c524a6b`):**
+- Token layer rewritten to a true-black base + white/grey ramp. Accent vars keep
+  their **names** (`--accent-green` etc.) so all `var(--accent-*)` markup updated
+  automatically; only values changed.
+- Semantic states by contrast: OK = outlined chip · danger = **inverted**
+  (white bg / black text) · pending = dashed border · P&L keeps `+/-` and `▲/▼`.
+- `html { filter: grayscale(1) }` — guarantee that emoji, focus rings and native
+  UI can never leak colour (emoji are text, they can't be tokenized).
+- Silver logo mark, metallic silver gradient wordmark, white glows/progress/dots,
+  `themeColor: #000000`. Favicon verified already monochrome (all 3 ICO frames:
+  0 non-grayscale pixels).
+
+**Fixes found while verifying (`796e603`):**
+1. **Degraded banner was dead code** — `safeFetch` never rejects, so the
+   rejection-based `failed` filter could never fire. Now derived from the
+   readiness probe ("unknown" = API unreachable → all sources listed).
+2. **Empty System Health card** — `/ready` answers **503 with a JSON body** when
+   degraded, but `safeFetch` dropped non-2xx bodies; plus an empty `checks`
+   object is truthy so the section rendered header-only. `fetchReady` now parses
+   the 503 body; the section renders only with actual checks.
+3. **No CORS on the API** — the browser-side TopBar `/health` poll was
+   permanently `API DOWN` while the API was healthy (server-side fetches
+   unaffected). Added explicit `CORS_ORIGINS` allow-list (settings + validator
+   that **rejects wildcards**), middleware registered so correlation IDs stay
+   outermost. `.env.example` documents adding the Vercel URL for prod.
+
+**Verification (fresh, before push):**
+- Source sweep: all **35** color literals grayscale (r=g=b) · built CSS: all
+  **77** literals grayscale, `filter:grayscale()` present, preflight intact ·
+  no Tailwind hue utilities in markup.
+- Playwright pixel proof: screenshots of `/`, `/risk`, `/proposals` →
+  **max saturation 0/255, 0 coloured pixels of 1.3M each** (emoji included) ·
+  DOM computed-style scan: no non-grey color on any element.
+- API-up state: System Health renders `Database: Ok / Redis: Unavailable` from
+  the 503 body; TopBar dot measured as **solid white disc** + DOM text
+  `API LIVE` (before CORS: `API DOWN`); API-down state shows the degraded
+  banner and hides System Health.
+- `npm run lint` clean · `npm run build` clean · backend `pytest` **108/108**
+  (+6 CORS/settings tests) · pushed `db878e0..796e603`, `main` == `origin/main`,
+  working tree clean.

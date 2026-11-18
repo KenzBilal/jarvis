@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { API } from "@/lib/api";
 
 export default function TopBar() {
   const [time, setTime] = useState("");
@@ -15,7 +16,7 @@ export default function TopBar() {
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        const r = await fetch(process.env.NEXT_PUBLIC_API_URL + "/health");
+        const r = await fetch(API + "/health");
         setHealth(r.ok ? "ok" : "error");
       } catch {
         setHealth("error");

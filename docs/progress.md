@@ -228,3 +228,44 @@ anywhere**, with semantics carried by contrast instead of color.
 - `npm run lint` clean · `npm run build` clean · backend `pytest` **108/108**
   (+6 CORS/settings tests) · pushed `db878e0..796e603`, `main` == `origin/main`,
   working tree clean.
+
+## Vercel Deployment Wiring — 2026-11-18
+
+**Goal:** the deployed frontend (`https://jarvisforme.vercel.app/`) must be able
+to call the API (CORS) and the TopBar health poll must work in any build.
+
+**State of the deployment (verified by fetching it):**
+- Vercel serves **200** and runs the latest pushed code (post-fix degraded
+  banner present in its HTML) — the monochrome theme is live.
+- Its server-side fetches fail by design of the current topology: there is **no
+  publicly reachable backend yet**, so the dashboard honestly shows the
+  degraded banner + "—" values. `NEXT_PUBLIC_API_URL` is not set on Vercel.
+
+**Changes:**
+1. **CORS allow-list now includes the deployed origin** —
+   `CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,https://jarvisforme.vercel.app`
+   in `.env.example` (committed) and the local `.env` (git-ignored, mode 600).
+2. **TopBar now imports the shared `API` base from `lib/api.ts`** instead of
+   reading `process.env.NEXT_PUBLIC_API_URL` directly. The direct read is not
+   inlined in the deployed client bundle, so production fetched the relative
+   URL `undefined/health` (always error). Both paths now resolve identically
+   (env var, else `http://localhost:8000` fallback).
+
+**Verification (fresh):**
+- CORS end-to-end against a live uvicorn: simple GET from
+  `https://jarvisforme.vercel.app` → `access-control-allow-origin` echoes the
+  origin; preflight OPTIONS → grants `GET` + `content-type`; **control**: an
+  unlisted origin gets **no** ACAO header (browser blocks it).
+- Playwright runtime check of the TopBar change: DOM text `API LIVE` and the
+  health dot measured as a **solid white disc** (center column grays
+  246–255).
+- Local full-stack render (`next start :3114` + backend): **no degraded
+  banner**, all five API fetches 200 (DB reachable; tables empty — honest
+  empty-state, portfolio shows "—" until snapshots exist).
+- `npm run lint` clean · `npm run build` clean (7 routes) · backend `pytest`
+  **108/108** · test servers stopped, ports 8000/3114 free.
+
+**Remaining gap (needs a hosting decision):** a publicly hosted backend + set
+`NEXT_PUBLIC_API_URL` in the Vercel project env to that backend's URL (and add
+that backend's `CORS_ORIGINS` to include the Vercel origin). Until then the
+deployed dashboard stays in degraded state by design.

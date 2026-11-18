@@ -40,7 +40,7 @@ export default function TopBar() {
       <div style={{ flex: 1 }} />
 
       {/* Clock */}
-      <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "'JetBrains Mono', monospace" }}>
+      <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "var(--font-jetbrains), ui-monospace, monospace" }}>
         {time}
       </div>
 

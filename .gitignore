@@ -19,6 +19,7 @@ out/
 *.log
 logs/
 .tmp/
+dump.rdb
 
 # Editors / OS
 .DS_Store

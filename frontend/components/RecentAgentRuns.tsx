@@ -1,5 +1,7 @@
 "use client";
-export default function RecentAgentRuns({ runs }: { runs: any[] }) {
+import type { AgentRun } from "@/lib/api";
+
+export default function RecentAgentRuns({ runs }: { runs: AgentRun[] }) {
   const statusColor = (s: string) => s === "success" ? "badge-green" : s === "failed" ? "badge-red" : s === "running" ? "badge-blue" : "badge-gray";
   const agentIcon = (t: string) => t === "market_analyst" ? "📊" : t === "news_intelligence" ? "📰" : t === "chief_analyst" ? "🧠" : t === "risk_engine" ? "🛡️" : "🤖";
   return (
@@ -11,11 +13,11 @@ export default function RecentAgentRuns({ runs }: { runs: any[] }) {
         <table className="data-table">
           <thead><tr><th>Agent</th><th>Status</th><th>Time</th></tr></thead>
           <tbody>
-            {runs.map((r: any) => (
+            {runs.map((r: AgentRun) => (
               <tr key={r.id}>
                 <td><span style={{ marginRight: 6 }}>{agentIcon(r.agent_type)}</span>{r.agent_type.replace(/_/g, " ")}</td>
                 <td><span className={`badge ${statusColor(r.status)}`}>{r.status}</span></td>
-                <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11 }}>{r.created_at ? new Date(r.created_at).toLocaleTimeString() : "—"}</td>
+                <td style={{ fontFamily: "var(--font-jetbrains), ui-monospace, monospace", fontSize: 11 }}>{r.created_at ? new Date(r.created_at).toLocaleTimeString() : "—"}</td>
               </tr>
             ))}
           </tbody>

@@ -17,7 +17,9 @@ export default function Sidebar() {
   return (
     <aside style={{
       width: 220,
-      minHeight: "100vh",
+      // .app-shell is height:100dvh + overflow:hidden — a 100vh sidebar would
+      // overflow it and clip this sidebar's footer.
+      height: "100%",
       background: "var(--bg-surface)",
       borderRight: "1px solid var(--border)",
       display: "flex",

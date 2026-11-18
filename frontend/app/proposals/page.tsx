@@ -1,4 +1,4 @@
-import { fetchProposals } from "@/lib/api";
+import { fetchProposals, type Proposal } from "@/lib/api";
 export default async function ProposalsPage() {
   const proposals = await fetchProposals();
   return (
@@ -14,20 +14,20 @@ export default async function ProposalsPage() {
           <table className="data-table">
             <thead><tr><th>Symbol</th><th>Direction</th><th>Entry</th><th>SL</th><th>TP</th><th>R:R</th><th>Confidence</th><th>Created</th></tr></thead>
             <tbody>
-              {proposals.map((p: any) => (
+              {proposals.map((p: Proposal) => (
                 <tr key={p.id}>
                   <td style={{ fontWeight: 700 }}>{p.symbol}</td>
                   <td><span className={`badge ${p.direction === "long" ? "badge-green" : "badge-red"}`}>{p.direction === "long" ? "▲ LONG" : "▼ SHORT"}</span></td>
-                  <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>${p.entry_price.toFixed(4)}</td>
-                  <td style={{ color: "var(--accent-red)", fontFamily: "'JetBrains Mono', monospace" }}>${p.stop_loss.toFixed(4)}</td>
-                  <td style={{ color: "var(--accent-green)", fontFamily: "'JetBrains Mono', monospace" }}>${p.take_profit.toFixed(4)}</td>
-                  <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.risk_reward_ratio.toFixed(1)}x</td>
+                  <td style={{ fontFamily: "var(--font-jetbrains), ui-monospace, monospace" }}>${p.entry_price.toFixed(4)}</td>
+                  <td style={{ color: "var(--accent-red)", fontFamily: "var(--font-jetbrains), ui-monospace, monospace" }}>${p.stop_loss.toFixed(4)}</td>
+                  <td style={{ color: "var(--accent-green)", fontFamily: "var(--font-jetbrains), ui-monospace, monospace" }}>${p.take_profit.toFixed(4)}</td>
+                  <td style={{ fontFamily: "var(--font-jetbrains), ui-monospace, monospace" }}>{p.risk_reward_ratio.toFixed(1)}x</td>
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <div className="progress-bar" style={{ width: 60 }}>
                         <div className="progress-fill" style={{ width: `${(p.confidence * 100).toFixed(0)}%`, background: `hsl(${p.confidence * 120}, 70%, 50%)` }} />
                       </div>
-                      <span style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace" }}>{(p.confidence * 100).toFixed(0)}%</span>
+                      <span style={{ fontSize: 11, fontFamily: "var(--font-jetbrains), ui-monospace, monospace" }}>{(p.confidence * 100).toFixed(0)}%</span>
                     </div>
                   </td>
                   <td style={{ fontSize: 11, color: "var(--text-muted)" }}>{new Date(p.created_at).toLocaleString()}</td>

@@ -1,31 +1,51 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const jetbrains = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-jetbrains",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "JARVIS — AI Crypto Research Platform",
-  description: "Just A Rather Very Intelligent System: autonomous AI-powered crypto research and trading platform connected to Binance.",
+  title: {
+    default: "JARVIS — AI Crypto Research Platform",
+    template: "%s · JARVIS",
+  },
+  description:
+    "Just A Rather Very Intelligent System: autonomous AI-powered crypto research and trading platform connected to Binance.",
   keywords: ["crypto", "trading", "AI", "Binance", "research", "JARVIS"],
+  // A trading dashboard should never be indexed
+  robots: { index: false, follow: false },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export const viewport: Viewport = {
+  themeColor: "#080c14",
+  colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
+    <html lang="en" className={`${inter.variable} ${jetbrains.variable}`}>
       <body>
-        <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-base)" }}>
+        <div className="app-shell">
           <Sidebar />
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+          <div className="app-body">
             <TopBar />
-            <main style={{ flex: 1, padding: "24px", overflowY: "auto" }}>
+            <main id="main" className="app-main">
               {children}
             </main>
           </div>

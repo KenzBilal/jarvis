@@ -1,4 +1,4 @@
-import { fetchPositions } from "@/lib/api";
+import { fetchPositions, type Position } from "@/lib/api";
 export default async function PositionsPage() {
   const positions = await fetchPositions();
   return (
@@ -14,15 +14,15 @@ export default async function PositionsPage() {
           <table className="data-table">
             <thead><tr><th>Symbol</th><th>Direction</th><th>Entry</th><th>SL</th><th>TP</th><th>Qty</th><th>Unrealized PnL</th><th>Opened</th></tr></thead>
             <tbody>
-              {positions.map((p: any) => (
+              {positions.map((p: Position) => (
                 <tr key={p.id}>
                   <td style={{ fontWeight: 700 }}>{p.symbol}</td>
                   <td><span className={`badge ${p.direction === "long" ? "badge-green" : "badge-red"}`}>{p.direction === "long" ? "▲ LONG" : "▼ SHORT"}</span></td>
-                  <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>${p.entry_price.toFixed(4)}</td>
-                  <td style={{ color: "var(--accent-red)", fontFamily: "'JetBrains Mono', monospace" }}>${p.stop_loss.toFixed(4)}</td>
-                  <td style={{ color: "var(--accent-green)", fontFamily: "'JetBrains Mono', monospace" }}>${p.take_profit.toFixed(4)}</td>
-                  <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.quantity.toFixed(6)}</td>
-                  <td style={{ color: p.unrealized_pnl >= 0 ? "var(--accent-green)" : "var(--accent-red)", fontFamily: "'JetBrains Mono', monospace", fontWeight: 600 }}>{p.unrealized_pnl >= 0 ? "+" : ""}{p.unrealized_pnl.toFixed(2)} USDT</td>
+                  <td style={{ fontFamily: "var(--font-jetbrains), ui-monospace, monospace" }}>${p.entry_price.toFixed(4)}</td>
+                  <td style={{ color: "var(--accent-red)", fontFamily: "var(--font-jetbrains), ui-monospace, monospace" }}>${p.stop_loss.toFixed(4)}</td>
+                  <td style={{ color: "var(--accent-green)", fontFamily: "var(--font-jetbrains), ui-monospace, monospace" }}>${p.take_profit.toFixed(4)}</td>
+                  <td style={{ fontFamily: "var(--font-jetbrains), ui-monospace, monospace" }}>{p.quantity.toFixed(6)}</td>
+                  <td style={{ color: p.unrealized_pnl >= 0 ? "var(--accent-green)" : "var(--accent-red)", fontFamily: "var(--font-jetbrains), ui-monospace, monospace", fontWeight: 600 }}>{p.unrealized_pnl >= 0 ? "+" : ""}{p.unrealized_pnl.toFixed(2)} USDT</td>
                   <td style={{ fontSize: 11, color: "var(--text-muted)" }}>{new Date(p.opened_at).toLocaleString()}</td>
                 </tr>
               ))}

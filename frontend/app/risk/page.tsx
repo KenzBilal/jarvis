@@ -10,7 +10,7 @@ export default async function RiskPage() {
       {!settings || settings.message ? (
         <div className="card" style={{ color: "var(--text-muted)", padding: "40px 0", textAlign: "center" }}>No risk settings configured yet. Default values will apply when risk engine runs.</div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="grid-two">
           <RiskMetric label="Daily Loss Limit" value={`${settings.daily_loss_limit_pct}%`} desc="Max portfolio loss per day" safe={!settings.kill_switch} />
           <RiskMetric label="Max Symbol Exposure" value={`${settings.max_exposure_per_symbol_pct}%`} desc="Max portfolio % per symbol" safe={true} />
           <RiskMetric label="Max Position Size" value={`${settings.max_position_size_pct}%`} desc="Max trade size per position" safe={true} />

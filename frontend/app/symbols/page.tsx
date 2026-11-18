@@ -1,4 +1,4 @@
-import { fetchSymbols } from "@/lib/api";
+import { fetchSymbols, type SymbolRow } from "@/lib/api";
 export default async function SymbolsPage() {
   const symbols = await fetchSymbols();
   return (
@@ -17,15 +17,15 @@ export default async function SymbolsPage() {
           <table className="data-table">
             <thead><tr><th>Symbol</th><th>Market</th><th>Last Price</th><th>24h Change</th><th>Volume (USDT)</th><th>Status</th></tr></thead>
             <tbody>
-              {symbols.map((s: any) => {
+              {symbols.map((s: SymbolRow) => {
                 const chg = s.price_change_pct_24h ?? 0;
                 return (
                   <tr key={s.id}>
                     <td style={{ fontWeight: 700 }}>{s.symbol}</td>
                     <td><span className={`badge ${s.market === "spot" ? "badge-blue" : "badge-purple"}`}>{s.market}</span></td>
-                    <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>${(s.last_price ?? 0).toFixed(4)}</td>
-                    <td style={{ color: chg >= 0 ? "var(--accent-green)" : "var(--accent-red)", fontFamily: "'JetBrains Mono', monospace" }}>{chg >= 0 ? "+" : ""}{chg.toFixed(2)}%</td>
-                    <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>${(s.volume_24h_usdt ?? 0).toLocaleString("en-US", { maximumFractionDigits: 0 })}</td>
+                    <td style={{ fontFamily: "var(--font-jetbrains), ui-monospace, monospace" }}>${(s.last_price ?? 0).toFixed(4)}</td>
+                    <td style={{ color: chg >= 0 ? "var(--accent-green)" : "var(--accent-red)", fontFamily: "var(--font-jetbrains), ui-monospace, monospace" }}>{chg >= 0 ? "+" : ""}{chg.toFixed(2)}%</td>
+                    <td style={{ fontFamily: "var(--font-jetbrains), ui-monospace, monospace" }}>${(s.volume_24h_usdt ?? 0).toLocaleString("en-US", { maximumFractionDigits: 0 })}</td>
                     <td><span className={`badge ${s.is_active ? "badge-green" : "badge-gray"}`}>{s.is_active ? "active" : "inactive"}</span></td>
                   </tr>
                 );

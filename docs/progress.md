@@ -143,3 +143,39 @@ Intentionally not implemented. Requires Phase 8 validation + explicit unlock dec
 | 1 — Market Scanner | 19 | ✅ All pass |
 | 2–7 — Agents + Risk | 34 | ✅ All pass |
 | **Total** | **102** | ✅ **102/102** |
+
+---
+
+## Dashboard Redesign Integration — 2026-11-18 (commit `e722f8c`)
+
+Owner supplied 3 redesigned frontend files (`globals.css`, `layout.tsx`, overview
+`page.tsx`); integrated them and fixed everything they depended on.
+
+**Applied (owner's files):**
+- `app/globals.css` — responsive `.app-shell`/`.grid-stats`/`.grid-two`, soft color
+  tokens, `@theme inline`, WCAG-safe `--text-muted`. Deliberately **removes** the old
+  global `*{margin:0;padding:0}` reset in favour of Tailwind preflight.
+- `app/layout.tsx` — `next/font/google` (Inter + JetBrains Mono → `--font-inter` /
+  `--font-jetbrains`), metadata template, viewport themeColor, shell markup.
+- `app/page.tsx` — degraded-data banner (`Promise.allSettled`), trading-mode labels
+  (`NEXT_PUBLIC_TRADING_MODE`), system-health dots, phase roadmap with progress bar.
+
+**Fixed (remaining issues found during review):**
+1. **Tailwind was never wired** — `@tailwindcss/turbopack` was installed but absent
+   from `next.config.ts`, so `@import "tailwindcss"` compiled to *nothing* (no
+   preflight, no utilities, no `@theme`). Added the `turbopack.rules` loader;
+   built CSS went 4.6 KB → 26.6 KB with preflight confirmed.
+2. **20 hardcoded `'JetBrains Mono'` font stacks** across 7 files — `next/font`
+   generates its own family names, so those never matched → replaced with
+   `var(--font-jetbrains)`.
+3. **Sidebar `minHeight:100vh`** overflowed the new `height:100dvh` shell and
+   clipped its footer → `height:"100%"`.
+4. **Risk page** used a fixed inline `1fr 1fr` grid → responsive `.grid-two`.
+5. **10 lint errors** (`no-explicit-any`) → typed response contracts in
+   `lib/api.ts` (`AgentRun`, `Position`, `Proposal`, `SymbolRow`, `RiskSettings`…).
+6. `dump.rdb` (local Redis dump) added to `.gitignore`.
+
+**Verification (fresh, before push):** `npm run lint` clean · `npm run build`
+clean · all 6 routes return **200** via `next start` with no error markers ·
+13 self-hosted woff2 font files emitted · backend `pytest` **102/102** ·
+pushed `cd0c2f9..e722f8c`, `main` == `origin/main`, working tree clean.

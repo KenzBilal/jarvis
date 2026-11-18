@@ -265,7 +265,13 @@ to call the API (CORS) and the TopBar health poll must work in any build.
 - `npm run lint` clean · `npm run build` clean (7 routes) · backend `pytest`
   **108/108** · test servers stopped, ports 8000/3114 free.
 
-**Remaining gap (needs a hosting decision):** a publicly hosted backend + set
-`NEXT_PUBLIC_API_URL` in the Vercel project env to that backend's URL (and add
-that backend's `CORS_ORIGINS` to include the Vercel origin). Until then the
-deployed dashboard stays in degraded state by design.
+**Remaining gap — decision (2026-11-19): keep the backend local for now.**
+The deployed dashboard therefore **intentionally stays in degraded state**
+(banner + "—" values): Vercel's servers cannot reach `localhost:8000`, and no
+code change can fix that. What still works from your machine: the TopBar polls
+the inlined fallback `http://localhost:8000/health` from your browser (loopback
+is exempt from mixed-content blocking, and this origin is in the allow-list),
+so it reads **API LIVE** whenever the local backend is running. Revisit public
+hosting later: deploy the backend, set `NEXT_PUBLIC_API_URL` in the Vercel
+project env to its URL, and add the Vercel origin to that backend's
+`CORS_ORIGINS` (pattern already documented in `.env.example`).

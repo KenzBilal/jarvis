@@ -1,36 +1,40 @@
 @import "tailwindcss";
 
-/* ───────────────────────── Design tokens ───────────────────────── */
-:root {
-  --bg-base:        #080c14;
-  --bg-surface:     #0d1322;
-  --bg-card:        #111827;
-  --bg-card-hover:  #161f30;
-  --border:         rgba(255,255,255,0.06);
-  --border-bright:  rgba(255,255,255,0.12);
+/* ───────────────────────── Design tokens ─────────────────────────
+   STRICT MONOCHROME: black, white and neutral greys only — no hues.
+   Semantic accents keep their names so markup (var(--accent-green) …)
+   stays unchanged; only the values are grayscale.
 
-  --accent-blue:    #3b82f6;
-  --accent-cyan:    #06b6d4;
-  --accent-green:   #10b981;
-  --accent-red:     #ef4444;
-  --accent-yellow:  #f59e0b;
-  --accent-purple:  #8b5cf6;
+   Contrast on #000: --text-secondary #a3a3a3 ≈ 9:1, --text-muted #7a7a7a ≈ 4.9:1 (WCAG AA). */
+:root {
+  --bg-base:        #000000;
+  --bg-surface:     #0a0a0a;
+  --bg-card:        #0f0f0f;
+  --bg-card-hover:  #161616;
+  --border:         rgba(255,255,255,0.08);
+  --border-bright:  rgba(255,255,255,0.18);
+
+  --accent-blue:    #ffffff;   /* brand / primary      */
+  --accent-cyan:    #e5e5e5;
+  --accent-green:   #ffffff;   /* positive / OK         */
+  --accent-red:     #ffffff;   /* danger (paired with inverted chips) */
+  --accent-yellow:  #d4d4d4;
+  --accent-purple:  #ededed;
 
   /* soft variants used by badges / pills */
-  --blue-soft:      #60a5fa;
-  --green-soft:     #34d399;
-  --red-soft:       #f87171;
-  --yellow-soft:    #fbbf24;
-  --purple-soft:    #a78bfa;
+  --blue-soft:      #ffffff;
+  --green-soft:     #ffffff;
+  --red-soft:       #ffffff;
+  --yellow-soft:    #d4d4d4;
+  --purple-soft:    #ededed;
 
-  --text-primary:   #f1f5f9;
-  --text-secondary: #94a3b8;
-  /* lifted from #475569 (~2.7:1) to pass WCAG AA on --bg-base */
-  --text-muted:     #7b8ba1;
+  --text-primary:   #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-muted:     #7a7a7a;
 
-  --glow-blue:      0 0 20px rgba(59,130,246,0.3);
-  --glow-green:     0 0 20px rgba(16,185,129,0.3);
-  --glow-red:       0 0 20px rgba(239,68,68,0.3);
+  --glow-blue:      0 0 20px rgba(255,255,255,0.12);
+  --glow-green:     0 0 20px rgba(255,255,255,0.12);
+  --glow-red:       0 0 20px rgba(255,255,255,0.20);
 }
 
 /* Expose tokens as Tailwind utilities: bg-surface, text-secondary, border-line … */
@@ -60,6 +64,9 @@ html {
   background: var(--bg-base);
   scrollbar-color: var(--border-bright) var(--bg-base);
   scrollbar-width: thin;
+  /* Monochrome guarantee: emoji, native focus rings, selection and any
+     colour that slips past the tokens are rendered as greyscale. */
+  filter: grayscale(1);
 }
 
 body {
@@ -71,6 +78,8 @@ body {
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;         /* only on body: avoids double scrollbars / broken sticky */
 }
+
+::selection { background: #ffffff; color: #000000; }
 
 :focus-visible {
   outline: 2px solid var(--accent-blue);
@@ -117,13 +126,15 @@ body {
 .card:hover { border-color: var(--border-bright); }
 
 .card-glass {
-  background: rgba(17, 24, 39, 0.7);
+  background: rgba(255,255,255,0.04);
   backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   border-radius: 12px;
 }
 
-/* ───────────────────────── Badges ───────────────────────── */
+/* ───────────────────────── Badges ─────────────────────────
+   Monochrome differentiation comes from FILL and BORDER STYLE, not hue:
+   outlined = OK · inverted = danger · filled = active · dashed = pending  */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -136,12 +147,12 @@ body {
   text-transform: uppercase;
   white-space: nowrap;
 }
-.badge-green  { background: rgba(16,185,129,0.15); color: var(--green-soft);  border: 1px solid rgba(16,185,129,0.3); }
-.badge-red    { background: rgba(239,68,68,0.15);  color: var(--red-soft);    border: 1px solid rgba(239,68,68,0.3); }
-.badge-blue   { background: rgba(59,130,246,0.15); color: var(--blue-soft);   border: 1px solid rgba(59,130,246,0.3); }
-.badge-yellow { background: rgba(245,158,11,0.15); color: var(--yellow-soft); border: 1px solid rgba(245,158,11,0.3); }
-.badge-purple { background: rgba(139,92,246,0.15); color: var(--purple-soft); border: 1px solid rgba(139,92,246,0.3); }
-.badge-gray   { background: rgba(71,85,105,0.3);   color: var(--text-secondary); border: 1px solid rgba(71,85,105,0.4); }
+.badge-green  { background: transparent;             color: #ffffff; border: 1px solid rgba(255,255,255,0.40); }
+.badge-red    { background: #ffffff;                 color: #000000; border: 1px solid #ffffff; }
+.badge-blue   { background: rgba(255,255,255,0.12);  color: #ffffff; border: 1px solid rgba(255,255,255,0.24); }
+.badge-yellow { background: transparent;             color: #d4d4d4; border: 1px dashed rgba(255,255,255,0.45); }
+.badge-purple { background: rgba(255,255,255,0.06);  color: #ededed; border: 1px solid rgba(255,255,255,0.20); }
+.badge-gray   { background: rgba(255,255,255,0.04);  color: var(--text-secondary); border: 1px solid rgba(255,255,255,0.12); }
 
 /* ───────────────────────── Stats ───────────────────────── */
 .stat-value {
@@ -197,11 +208,11 @@ body {
   text-decoration: none;
   border: 1px solid transparent;
 }
-.nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+.nav-item:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
 .nav-item.active {
-  background: rgba(59,130,246,0.15);
-  color: var(--blue-soft);
-  border-color: rgba(59,130,246,0.2);
+  background: rgba(255,255,255,0.10);
+  color: #ffffff;
+  border-color: rgba(255,255,255,0.22);
 }
 
 /* ───────────────────────── Effects ───────────────────────── */
@@ -220,17 +231,19 @@ body {
   animation: pulse-dot 2s ease-in-out infinite;
   display: inline-block;
 }
+/* OK = solid white · failed = hollow ring (monochrome state contrast) */
 .dot {
   width: 7px; height: 7px;
   border-radius: 50%;
   display: inline-block;
   flex-shrink: 0;
 }
-.dot-ok  { background: var(--accent-green); box-shadow: 0 0 8px rgba(16,185,129,0.5); }
-.dot-bad { background: var(--accent-red); }
+.dot-ok  { background: #ffffff; box-shadow: 0 0 8px rgba(255,255,255,0.55); }
+.dot-bad { background: transparent; border: 1.5px solid rgba(255,255,255,0.80); }
 
+/* Metallic silver wordmark — the monochrome take on the old blue→purple gradient */
 .gradient-text {
-  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 50%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #8a8a8a 45%, #ffffff 70%, #c9c9c9 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -239,11 +252,11 @@ body {
 .mini-bar { display: flex; align-items: flex-end; gap: 2px; height: 32px; }
 .mini-bar-item {
   flex: 1; border-radius: 2px 2px 0 0;
-  background: rgba(59,130,246,0.4);
+  background: rgba(255,255,255,0.30);
   transition: background 0.2s;
 }
-.mini-bar-item.up   { background: rgba(16,185,129,0.5); }
-.mini-bar-item.down { background: rgba(239,68,68,0.4); }
+.mini-bar-item.up   { background: rgba(255,255,255,0.75); }
+.mini-bar-item.down { background: rgba(255,255,255,0.20); }
 
 @keyframes scan {
   0%   { transform: translateY(-100%); opacity: 0; }
@@ -255,13 +268,13 @@ body {
   position: absolute;
   left: 0; right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+  background: linear-gradient(90deg, transparent, #ffffff, transparent);
   animation: scan 3s ease-in-out infinite;
   pointer-events: none;
 }
 
 .progress-bar  { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+.progress-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; background: #ffffff; }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }

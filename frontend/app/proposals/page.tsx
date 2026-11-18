@@ -25,7 +25,7 @@ export default async function ProposalsPage() {
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <div className="progress-bar" style={{ width: 60 }}>
-                        <div className="progress-fill" style={{ width: `${(p.confidence * 100).toFixed(0)}%`, background: `hsl(${p.confidence * 120}, 70%, 50%)` }} />
+                        <div className="progress-fill" style={{ width: `${(p.confidence * 100).toFixed(0)}%`, background: `rgba(255,255,255,${(0.2 + p.confidence * 0.8).toFixed(2)})` }} />
                       </div>
                       <span style={{ fontSize: 11, fontFamily: "var(--font-jetbrains), ui-monospace, monospace" }}>{(p.confidence * 100).toFixed(0)}%</span>
                     </div>

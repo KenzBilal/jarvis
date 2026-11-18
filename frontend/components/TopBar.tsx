@@ -49,8 +49,10 @@ export default function TopBar() {
         <div style={{
           width: 7, height: 7,
           borderRadius: "50%",
-          background: health === "ok" ? "var(--accent-green)" : health === "error" ? "var(--accent-red)" : "#64748b",
-          boxShadow: health === "ok" ? "0 0 8px rgba(16,185,129,0.6)" : "none",
+          // Monochrome states: live = solid white + glow · down = hollow ring · loading = mid grey
+          background: health === "ok" ? "#ffffff" : health === "error" ? "transparent" : "#7a7a7a",
+          border: health === "error" ? "1.5px solid #ffffff" : "none",
+          boxShadow: health === "ok" ? "0 0 8px rgba(255,255,255,0.6)" : "none",
           transition: "all 0.3s",
         }} />
         <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>

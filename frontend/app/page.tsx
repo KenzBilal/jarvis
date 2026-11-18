@@ -47,16 +47,14 @@ export default async function OverviewPage() {
   const port         = portfolio.status === "fulfilled" ? (portfolio.value as Portfolio) : null;
   const isLive       = readyVal?.status === "ready";
 
-  // Which data sources failed → shown in a banner instead of silently rendering zeros
-  const failed = [
-    ["health",    ready],
-    ["symbols",   symbols],
-    ["positions", positions],
-    ["agent runs", runs],
-    ["portfolio", portfolio],
-  ]
-    .filter(([, r]) => (r as PromiseSettledResult<unknown>).status === "rejected")
-    .map(([name]) => name as string);
+  // Which data sources are unavailable → banner instead of silently rendering zeros.
+  // safeFetch never rejects (it resolves to null), so rejection-based detection can
+  // never fire. "unknown" means the readiness probe never got an answer at all —
+  // i.e. the API is unreachable, so every source below failed with it.
+  const apiDown = !readyVal || readyVal.status === "unknown";
+  const failed = apiDown
+    ? ["health", "symbols", "positions", "agent runs", "portfolio"]
+    : [];
 
   const hasPortfolioValue = typeof port?.total_value_usdt === "number";
   const hasPnl            = typeof port?.daily_pnl === "number";
@@ -88,8 +86,8 @@ export default async function OverviewPage() {
           className="card"
           style={{
             display: "flex", alignItems: "center", gap: 10,
-            borderColor: "rgba(245,158,11,0.35)",
-            background: "rgba(245,158,11,0.08)",
+            borderColor: "rgba(255,255,255,0.30)",
+            background: "rgba(255,255,255,0.05)",
             padding: "12px 16px",
           }}
         >
@@ -132,8 +130,9 @@ export default async function OverviewPage() {
         />
       </section>
 
-      {/* System health */}
-      {readyVal?.checks && (
+      {/* System health — only when the probe actually returned checks (an empty
+          object means the API is unreachable and the banner above covers it) */}
+      {readyVal?.checks && Object.keys(readyVal.checks).length > 0 && (
         <section
           aria-label="System health"
           className="card"
@@ -218,8 +217,8 @@ function PhaseProgress() {
               fontSize: 12,
               fontWeight: 500,
               border: "1px solid",
-              borderColor: p.done ? "rgba(16,185,129,0.3)" : "var(--border)",
-              background: p.done ? "rgba(16,185,129,0.1)" : "transparent",
+              borderColor: p.done ? "rgba(255,255,255,0.45)" : "var(--border)",
+              background: p.done ? "rgba(255,255,255,0.10)" : "transparent",
               color: p.done ? "var(--green-soft)" : "var(--text-muted)",
               display: "flex",
               alignItems: "center",

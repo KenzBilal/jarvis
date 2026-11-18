@@ -33,10 +33,13 @@ export default function Sidebar() {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
             width: 32, height: 32,
-            background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+            // Metallic silver mark (monochrome replacement for the blue→purple gradient)
+            background: "linear-gradient(135deg, #ffffff, #b0b0b0)",
+            color: "#000000",
             borderRadius: 8,
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 16,
+            fontWeight: 700,
           }}>J</div>
           <div>
             <div style={{ fontWeight: 800, fontSize: 15, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>JARVIS</div>

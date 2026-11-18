@@ -19,7 +19,7 @@ export default async function RiskPage() {
           <RiskMetric label="Kill Switch" value={settings.kill_switch ? "ACTIVE" : "Off"} desc="Global trading halt" safe={!settings.kill_switch} danger={settings.kill_switch} />
         </div>
       )}
-      <div className="card" style={{ borderColor: "rgba(239,68,68,0.3)" }}>
+      <div className="card" style={{ borderColor: "rgba(255,255,255,0.28)" }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
           <div style={{ fontSize: 20 }}>🛡️</div>
           <div>
@@ -38,7 +38,7 @@ export default async function RiskPage() {
 }
 function RiskMetric({ label, value, desc, safe, danger }: { label: string; value: string; desc: string; safe: boolean; danger?: boolean }) {
   return (
-    <div className="card" style={{ borderColor: danger ? "rgba(239,68,68,0.4)" : undefined }}>
+    <div className="card" style={{ borderColor: danger ? "rgba(255,255,255,0.55)" : undefined }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
           <div className="stat-label">{label}</div>

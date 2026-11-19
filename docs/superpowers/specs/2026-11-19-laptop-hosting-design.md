@@ -33,7 +33,7 @@ evidence, 2026-11-19):
 | 2 | Nothing calls `start_polling()` — no process runs the bot | only definition in `telegram/bot.py:154`, zero callers |
 | 3 | Nothing calls `send_proposal()` — proposals never reach Telegram | only definition in `telegram/bot.py:76`, zero callers |
 | 4 | `run_research` is a stub ("stubbed until AI key added") — no analysis runs | `workers/research_worker.py:54-65` |
-| 5 | No AI provider configured in `.env` | no `AI_PROVIDER`/key vars present — **owner: "will fix later"** |
+| 5 | No AI provider configured in `.env` | no `AI_PROVIDER`/key vars present — **resolved 2026-11-19:** owner provided Gemini + Groq keys; both verified live (model list + real completion → HTTP 200 each) |
 | 6 | `TELEGRAM_APPROVED_USER_ID` unset → every tap answers "Unauthorized" | `bot.py:21,54` — **resolved 2026-11-19:** owner provided the ID; now in `.env` (kept out of the repo) |
 | 7 | Nothing reads `ProposalApproval` — an approval writes a row and ends | grep: only `models.py` (schema) and `bot.py` (write) |
 | 8 | Two competing `WorkerSettings`: the documented entry has only the heartbeat; the scanner cron lives in the other | `tasks.py:57-64` vs `research_worker.py:85-94` |
@@ -64,11 +64,13 @@ evidence, 2026-11-19):
 - No live trading; paper only until Phase 9 (explicit owner approval, separate
   project).
 - No dashboard deployment work (kept local; already decided).
-- **No AI provider choice in this project** — owner said "will fix later". The
-  research chain must skip honestly until a provider is configured; no fake
-  proposal generation to paper over it.
+- **No paid AI tiers in this project** — both providers run on their free
+  tiers (verified limits in *AI providers* below); moving to paid is a
+  later, deliberate owner decision. No gateway/router services (OpenRouter
+  etc.) — direct provider calls only. Research still skips honestly if keys
+  are ever removed — no fake output.
 - No Binance keys in this project (paper trading uses public market data;
-  testnet keys belong to Phase 8 activation).
+  testnet keys belong to Phase 8 activation — owner will provide them next).
 - No advanced position features: no trailing stops, no partial fills, no
   manual close command (basic SL/TP close + realized P&L only).
 
@@ -102,9 +104,49 @@ evidence, 2026-11-19):
 - **Proposal expiry:** **keep 5 minutes; auto-expire** — owner's reasoning:
   prices change fast after analysis, so the approval window must be short and
   a stale proposal must lapse on its own (an honest NO TRADE).
-- **AI provider:** deferred by owner; pipeline runs scanner always and skips
-  research honestly until configured.
+- **AI providers:** owner provided **Gemini + Groq** keys (2026-11-19), both
+  stored in `.env` and verified live; integration in scope (see *AI
+  providers*). Analysis must still skip honestly if keys are ever removed —
+  no fake output.
 - **Dashboard:** local-only, excluded from this project.
+
+## AI providers (keys verified 2026-11-19)
+
+**Evidence:** Gemini `v1beta/models` → HTTP 200 (50 models) and a real
+chat completion via Google's OpenAI-compatible endpoint → HTTP 200
+`JARVIS OK`. Groq `/openai/v1/models` → HTTP 200 and a real completion →
+HTTP 200 `JARVIS OK`.
+
+**What the keys give us (free tiers, Nov 2026):**
+
+| | Gemini (AI Studio key) | Groq |
+|---|---|---|
+| Workhorse model | `gemini-3.5-flash-lite` — **15 RPM / 500 req/day** | `openai/gpt-oss-120b` — **30 RPM / 1,000 req/day / 200K tokens/day** |
+| Strongest free option | `gemini-3.8-flash` — only **5 RPM / 20 req/day** | gpt-oss-120b (same model, 131K context, ~500 tok/s) |
+| Limits are per | Google Cloud **project** (extra keys share quota); reset midnight Pacific | **organization**; cached tokens excluded |
+| Cost notes | Free tier prompts may train Google's products (no secrets in prompts — none are). Prices double for 3.8 Flash Jan 1 2027 (paid only). 2.5 models wind down Dec 1 2026 → avoid | Llama models left free tier (enterprise-only). Paid: $0.15/$0.60 per 1M |
+| Quirk | 429 on any of RPM/TPM/RPD even if others have room | gpt-oss burns hidden **reasoning tokens** (64 completion tokens for a 2-word reply) — needs max-token headroom; empty content must be treated as an error |
+
+**Our workload** (≤6 research cycles/day × ≤5 symbols × ~3 calls ≈ ≤90
+LLM calls/day) fits inside Gemini flash-lite's 500/day with ~5× headroom;
+Groq's 1,000/day fallback is never expected to throttle us. No payment
+needed.
+
+**Integration (builder's calls):**
+- Generalize `llm.py`'s existing OpenAI-compatible path into a small
+  provider registry (raw httpx, no new SDK dependencies):
+  `gemini` → `https://generativelanguage.googleapis.com/v1beta/openai/`,
+  `groq` → `https://api.groq.com/openai/v1`. Existing openai/anthropic/
+  ollama paths untouched — nothing clashes.
+- `.env` (and `.env.example` with placeholders): `AI_PROVIDER=gemini`,
+  `AI_MODEL=gemini-3.5-flash-lite`, `AI_PROVIDER_FALLBACK=groq`,
+  `AI_MODEL_FALLBACK=openai/gpt-oss-120b`.
+- **Retry ladder:** primary ×3 with backoff (existing `retry_async`) → on
+  429/5xx/transport failure **or empty content** → one attempt on the
+  fallback → honest `llm.fallback_used` structured log. Empty content raises
+  `LLMError` (the gpt-oss reasoning quirk above).
+- Model choices are env-only: power-up later = change `AI_MODEL` (e.g. to
+  `gemini-3.8-flash` once billing is linked) — no code change.
 
 ## Design (builder's calls — marked where decided)
 
@@ -197,15 +239,17 @@ evidence, 2026-11-19):
   Approve → paper position + audit rows; a second tap / second user →
   "Unauthorized"; letting one lapse → message edits to EXPIRED; SL/TP touch →
   position closes with realized P&L and audit trail.
-- **Live E2E, part 2 (after owner adds an AI provider):** real research cycle
-  produces a genuine proposal end-to-end (accepting that the chief analyst
-  may legitimately return NO TRADE — nondeterminism is honest).
+- **Live E2E, part 2:** a real research cycle with the configured Gemini
+  primary → genuine proposal (or an honest chief-analyst NO TRADE —
+  nondeterminism is honest) → Telegram → approve → paper position; plus one
+  forced-fallback check proving the Groq path engages when the primary is
+  rate-limited.
 - `docs/progress.md` updated; `git status` clean of secrets.
 
 ## Open items
 
-- **AI provider + key** (owner: "will fix later") — single switch in `.env`;
-  no code change beyond what this design already includes.
+- **Binance API key + secret** (owner will provide next) — for Phase 8
+  testnet activation only; not required by this project's acceptance.
 
 ## What's left to the builder
 
